@@ -464,6 +464,10 @@ ul { list-style: none; }
   letter-spacing: .02em;
 }
 
+.about .section__title {
+  font-size: 2rem;
+}
+
 .about__orgtitle {
   font-family: var(--font-sans);
   font-size: 1rem;
