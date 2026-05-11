@@ -696,7 +696,16 @@ ul { list-style: none; }
   display: flex;
   flex-direction: column;
   gap: 16px;
+  position: relative;
+  overflow: hidden;
   transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.program-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-l));
 }
 .program-card:hover {
   border-color: var(--color-accent);
