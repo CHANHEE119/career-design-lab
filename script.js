@@ -46,7 +46,7 @@ const form = document.getElementById('contact-form');
 const formSuccess = document.getElementById('form-success');
 
 if (form) {
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const name = form.querySelector('#name').value.trim();
@@ -55,15 +55,30 @@ if (form) {
     if (!name) { alert('이름을 입력해주세요.'); return; }
     if (!phone) { alert('연락처를 입력해주세요.'); return; }
 
-    // Simulate submission
     const btn = form.querySelector('button[type="submit"]');
     btn.textContent = '전송 중...';
     btn.disabled = true;
 
-    setTimeout(() => {
-      form.style.display = 'none';
-      formSuccess.style.display = 'block';
-    }, 900);
+    try {
+      const res = await fetch('https://formspree.io/a01084776577@gmail.com', {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (res.ok) {
+        form.style.display = 'none';
+        formSuccess.style.display = 'block';
+      } else {
+        btn.textContent = '상담 신청하기';
+        btn.disabled = false;
+        alert('전송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      }
+    } catch {
+      btn.textContent = '상담 신청하기';
+      btn.disabled = false;
+      alert('전송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    }
   });
 }
 
