@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 · 생애진로 디자인랩</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #1b4f8e;
+      --blue-d: #153d6e;
+      --blue-light: #e8f0fb;
+      --text: #2d3748;
+      --sub: #718096;
+      --border: #e2e8f0;
+      --bg: #f7f9fc;
+      --white: #fff;
+      --green: #38a169;
+      --green-d: #2f855a;
+      --red: #e53e3e;
+    }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+
+    /* LOGIN */
+    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .login-box { background: var(--white); border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 420px; box-shadow: 0 8px 32px rgba(0,0,0,.08); }
+    .login-logo { font-size: 2rem; margin-bottom: 16px; }
+    .login-title { font-size: 1.4rem; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
+    .login-sub { font-size: .9rem; color: var(--sub); margin-bottom: 32px; }
+
+    /* FORM */
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: .78rem; font-weight: 700; color: var(--sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; }
+    .form-group input, .form-group textarea {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 14px;
+      font-size: .95rem; font-family: inherit; color: var(--text); background: var(--white);
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(27,79,142,.1);
+    }
+    .form-group textarea { resize: vertical; }
+    .hint { font-size: .78rem; color: var(--sub); margin-top: 5px; }
+    .hint code { background: #edf2f7; padding: 1px 5px; border-radius: 4px; font-family: monospace; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 8px; border: none; font-size: .9rem; font-weight: 600; cursor: pointer; transition: all .15s; font-family: inherit; text-decoration: none; }
+    .btn-primary { background: var(--blue); color: white; }
+    .btn-primary:hover { background: var(--blue-d); }
+    .btn-full { width: 100%; justify-content: center; padding: 13px; font-size: 1rem; }
+    .btn-ghost { background: transparent; color: white; border: 1.5px solid rgba(255,255,255,.4); }
+    .btn-ghost:hover { background: rgba(255,255,255,.1); }
+    .btn-load { background: var(--blue); color: white; white-space: nowrap; padding: 10px 18px; }
+    .btn-load:hover { background: var(--blue-d); }
+    .error-msg { color: var(--red); font-size: .85rem; margin-top: 10px; }
+
+    /* ADMIN LAYOUT */
+    .admin-header { background: var(--blue); color: white; padding: 0 32px; height: 60px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+    .admin-header-title { font-size: 1rem; font-weight: 700; }
+    .admin-header-right { display: flex; gap: 10px; }
+    .admin-main { max-width: 880px; margin: 0 auto; padding: 32px 24px 120px; }
+
+    /* CARDS */
+    .card { background: var(--white); border-radius: 12px; padding: 28px 32px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1.5px solid var(--border); }
+    .card-title { font-size: 1rem; font-weight: 700; color: var(--blue); }
+    .token-row { display: flex; gap: 10px; }
+    .token-row input { flex: 1; }
+
+    /* GRIDS */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .prog-block { border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+    .prog-block + .prog-block { margin-top: 12px; }
+    .prog-label { font-size: .75rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 14px; }
+
+    /* SAVE BAR */
+    .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; gap: 16px; box-shadow: 0 -2px 12px rgba(0,0,0,.08); z-index: 100; }
+    .btn-save { background: var(--green); color: white; padding: 12px 36px; font-size: 1rem; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; font-family: inherit; transition: all .15s; }
+    .btn-save:hover { background: var(--green-d); }
+    .btn-save:disabled { background: #a0aec0; cursor: not-allowed; }
+    #save-status { font-size: .9rem; font-weight: 600; }
+    .status-ok { color: var(--green); }
+    .status-err { color: var(--red); }
+    .status-loading { color: var(--sub); }
+
+    @media (max-width: 600px) {
+      .login-box { padding: 32px 20px; }
+      .two-col { grid-template-columns: 1fr; }
+      .token-row { flex-direction: column; }
+      .admin-header { padding: 0 16px; }
+      .admin-main { padding: 20px 16px 120px; }
+      .card { padding: 20px; }
+      .save-bar { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div class="login-wrap" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🔐</div>
+    <h1 class="login-title">관리자 로그인</h1>
+    <p class="login-sub">생애진로 디자인랩 웹사이트 관리자 페이지</p>
+    <div class="form-group">
+      <label for="pw-input">비밀번호</label>
+      <input type="password" id="pw-input" placeholder="비밀번호 입력"
+        onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="login()">로그인</button>
+    <p class="error-msg" id="login-error" style="display:none">비밀번호가 올바르지 않습니다.</p>
+  </div>
+</div>
+
+<!-- ===== ADMIN ===== -->
+<div id="admin-screen" style="display:none">
+
+  <header class="admin-header">
+    <span class="admin-header-title">생애진로 디자인랩 · 관리자</span>
+    <div class="admin-header-right">
+      <a href="index.html" target="_blank" class="btn btn-ghost">사이트 보기 ↗</a>
+      <button class="btn btn-ghost" onclick="logout()">로그아웃</button>
+    </div>
+  </header>
+
+  <div class="admin-main">
+
+    <!-- GitHub 연결 -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">🔗 GitHub 연결</span></div>
+      <div class="form-group">
+        <label>GitHub Personal Access Token</label>
+        <div class="token-row">
+          <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+          <button class="btn btn-load" onclick="loadContent()">불러오기</button>
+        </div>
+        <p class="hint">GitHub → Settings → Developer settings → Personal access tokens → Classic (repo 권한 필요). 한 번 입력하면 이 브라우저에 저장됩니다.</p>
+      </div>
+    </div>
+
+    <div id="content-sections" style="display:none">
+
+      <!-- 히어로 -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">🏠 히어로 섹션</span></div>
+        <div class="form-group">
+          <label>메인 타이틀</label>
+          <input type="text" id="hero-title">
+          <p class="hint">강조 단어: <code>&lt;em&gt;단어&lt;/em&gt;</code> &nbsp; 줄바꿈: <code>&lt;br /&gt;</code></p>
+        </div>
+        <div class="form-group">
+          <label>서브 문구</label>
+          <textarea id="hero-sub" rows="2"></textarea>
+          <p class="hint">줄바꿈: <code>&lt;br /&gt;</code></p>
+        </div>
+      </div>
+
+      <!-- 소개 -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">👤 소개 문구</span></div>
+        <div class="form-group">
+          <label>소개 문단 1</label>
+          <textarea id="about-body1" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>소개 문단 2</label>
+          <textarea id="about-body2" rows="3"></textarea>
+        </div>
+      </div>
+
+      <!-- 프로그램 -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">📚 프로그램</span></div>
+        <div class="two-col" style="margin-bottom:12px">
+          <div class="prog-block">
+            <p class="prog-label">프로그램 01</p>
+            <div class="form-group"><label>제목</label><input type="text" id="prog1-title"></div>
+            <div class="form-group" style="margin-bottom:0"><label>내용</label><textarea id="prog1-body" rows="4"></textarea></div>
+          </div>
+          <div class="prog-block">
+            <p class="prog-label">프로그램 02</p>
+            <div class="form-group"><label>제목</label><input type="text" id="prog2-title"></div>
+            <div class="form-group" style="margin-bottom:0"><label>내용</label><textarea id="prog2-body" rows="4"></textarea></div>
+          </div>
+        </div>
+        <div class="prog-block">
+          <p class="prog-label">프로그램 03</p>
+          <div class="two-col">
+            <div class="form-group"><label>제목</label><input type="text" id="prog3-title"></div>
+            <div class="form-group" style="margin-bottom:0"><label>내용</label><textarea id="prog3-body" rows="3"></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 파트너 -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">🤝 함께한 기관</span></div>
+        <p class="hint" style="margin-bottom:20px">각 줄에 기관명 하나씩 입력하세요. 저장 시 자동으로 · 구분자로 변환됩니다.</p>
+        <div class="two-col" style="margin-bottom:16px">
+          <div class="form-group"><label>기업</label><textarea id="partner-기업" rows="10"></textarea></div>
+          <div class="form-group"><label>공공기관</label><textarea id="partner-공공기관" rows="10"></textarea></div>
+        </div>
+        <div class="two-col" style="margin-bottom:16px">
+          <div class="form-group"><label>복지·여성·고령사회</label><textarea id="partner-복지" rows="7"></textarea></div>
+          <div class="form-group"><label>대학교</label><textarea id="partner-대학교" rows="7"></textarea></div>
+        </div>
+        <div class="form-group"><label>지자체 및 평생학습</label><textarea id="partner-지자체" rows="4"></textarea></div>
+      </div>
+
+      <!-- 연락처 -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">📞 연락처 & 링크</span></div>
+        <div class="two-col">
+          <div class="form-group">
+            <label>전화번호</label>
+            <input type="tel" id="contact-phone" placeholder="010-0000-0000">
+            <p class="hint">하이픈(-) 포함하여 입력</p>
+          </div>
+          <div class="form-group">
+            <label>유튜브 채널 URL</label>
+            <input type="url" id="contact-youtube" placeholder="https://www.youtube.com/...">
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="save-bar" id="save-bar" style="display:none">
+    <button class="btn-save" id="save-btn" onclick="saveChanges()">💾 저장 &amp; 배포</button>
+    <span id="save-status"></span>
+  </div>
+
+</div>
+
+<script>
+const OWNER = 'CHANHEE119';
+const REPO = 'career-design-lab';
+const FILE = 'index.html';
+const PASSWORD = 'jincro2025';
+
+let fileSha = '';
+let rawContent = '';
+
+function login() {
+  if (document.getElementById('pw-input').value === PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    const saved = localStorage.getItem('gh_admin_token');
+    if (saved) document.getElementById('github-token').value = saved;
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function logout() {
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('pw-input').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function b64dec(s) {
+  return decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
+}
+function b64enc(s) {
+  return btoa(unescape(encodeURIComponent(s)));
+}
+
+function extract(html, key) {
+  const re = new RegExp('<!-- EDIT:' + key + ' -->([\\s\\S]*?)<!-- /EDIT:' + key + ' -->');
+  const m = html.match(re);
+  return m ? m[1].trim() : '';
+}
+
+function inject(html, key, value) {
+  const re = new RegExp('(<!-- EDIT:' + key + ' -->)[\\s\\S]*?(<!-- /EDIT:' + key + ' -->)');
+  return html.replace(re, function(_, open, close) { return open + value + close; });
+}
+
+function setStatus(msg, cls) {
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  el.className = cls || '';
+}
+
+function val(id, v) {
+  const el = document.getElementById(id);
+  if (el) el.value = v;
+}
+
+function get(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+async function loadContent() {
+  const token = document.getElementById('github-token').value.trim();
+  if (!token) { alert('GitHub 토큰을 입력하세요.'); return; }
+  localStorage.setItem('gh_admin_token', token);
+  setStatus('불러오는 중...', 'status-loading');
+  try {
+    const res = await fetch(
+      'https://api.github.com/repos/' + OWNER + '/' + REPO + '/contents/' + FILE,
+      { headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' } }
+    );
+    if (!res.ok) throw new Error('불러오기 실패 — 토큰과 repo 권한을 확인하세요.');
+    const data = await res.json();
+    fileSha = data.sha;
+    rawContent = b64dec(data.content);
+    fillForms(rawContent);
+    document.getElementById('content-sections').style.display = 'block';
+    document.getElementById('save-bar').style.display = 'flex';
+    setStatus('✅ 불러오기 완료', 'status-ok');
+  } catch (e) {
+    setStatus('❌ ' + e.message, 'status-err');
+  }
+}
+
+function fillForms(html) {
+  val('hero-title', extract(html, 'hero-title'));
+  val('hero-sub', extract(html, 'hero-sub'));
+  val('about-body1', extract(html, 'about-body1'));
+  val('about-body2', extract(html, 'about-body2'));
+  val('prog1-title', extract(html, 'prog1-title'));
+  val('prog1-body', extract(html, 'prog1-body'));
+  val('prog2-title', extract(html, 'prog2-title'));
+  val('prog2-body', extract(html, 'prog2-body'));
+  val('prog3-title', extract(html, 'prog3-title'));
+  val('prog3-body', extract(html, 'prog3-body'));
+  ['기업', '공공기관', '복지', '대학교', '지자체'].forEach(function(k) {
+    val('partner-' + k, extract(html, 'partner-' + k).split(' · ').join('\n'));
+  });
+  val('contact-phone', extract(html, 'contact-phone'));
+  var ytBlock = extract(html, 'youtube-link');
+  var ytMatch = ytBlock.match(/href="([^"]+)"/);
+  val('contact-youtube', ytMatch ? ytMatch[1] : '');
+}
+
+async function saveChanges() {
+  if (!fileSha) { alert('먼저 내용을 불러오세요.'); return; }
+  const token = localStorage.getItem('gh_admin_token');
+  if (!token) { alert('토큰이 없습니다. 다시 불러오세요.'); return; }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  setStatus('저장 중...', 'status-loading');
+
+  let html = rawContent;
+
+  html = inject(html, 'hero-title', get('hero-title'));
+  html = inject(html, 'hero-sub', get('hero-sub'));
+  html = inject(html, 'about-body1', get('about-body1'));
+  html = inject(html, 'about-body2', get('about-body2'));
+  html = inject(html, 'prog1-title', get('prog1-title'));
+  html = inject(html, 'prog1-body', get('prog1-body'));
+  html = inject(html, 'prog2-title', get('prog2-title'));
+  html = inject(html, 'prog2-body', get('prog2-body'));
+  html = inject(html, 'prog3-title', get('prog3-title'));
+  html = inject(html, 'prog3-body', get('prog3-body'));
+
+  ['기업', '공공기관', '복지', '대학교', '지자체'].forEach(function(k) {
+    var v = get('partner-' + k).split('\n').map(function(s){ return s.trim(); }).filter(Boolean).join(' · ');
+    html = inject(html, 'partner-' + k, v);
+  });
+
+  // 전화번호: 표시 텍스트 + href 업데이트
+  var phone = get('contact-phone');
+  html = inject(html, 'contact-phone', phone);
+  html = html.replace(/href="tel:[^"]*"/, 'href="tel:' + phone.replace(/-/g, '') + '"');
+
+  // 유튜브: youtube-link 블록 내 href 업데이트
+  var yt = get('contact-youtube');
+  var currentYtBlock = extract(html, 'youtube-link');
+  var newYtBlock = currentYtBlock.replace(/href="[^"]*"/, 'href="' + yt + '"');
+  html = inject(html, 'youtube-link', newYtBlock);
+
+  try {
+    const res = await fetch(
+      'https://api.github.com/repos/' + OWNER + '/' + REPO + '/contents/' + FILE,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: 'token ' + token,
+          Accept: 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: '관리자 페이지에서 내용 업데이트',
+          content: b64enc(html),
+          sha: fileSha
+        })
+      }
+    );
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || '저장 실패');
+    }
+    const data = await res.json();
+    fileSha = data.content.sha;
+    rawContent = html;
+    setStatus('✅ 저장 완료! 약 1분 후 사이트에 반영됩니다.', 'status-ok');
+  } catch (e) {
+    setStatus('❌ 저장 실패: ' + e.message, 'status-err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
